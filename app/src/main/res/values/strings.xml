@@ -4,4 +4,8 @@
     <string name="accel">Accelerometer</string>
     <string name="record">Start Recording</string>
     <string name="togglebutton">ToggleButton</string>
+    <string name="stnry">Stationary</string>
+    <string name="wlk">Walking</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
 </resources>

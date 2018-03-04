@@ -29,6 +29,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -62,6 +64,10 @@ public class RecordFragment extends Fragment implements Serializable {
     public static int num1 = 0, num2 = 0;
     private static Boolean sensorListener_flag = false, gpslistener_flag = false;
     private static String fields = "timestamp, lat, long, accelx, accely, accelz, label\n";
+    public static String labelString = "Stationary";
+
+    private RadioGroup label;
+    private RadioButton walking, stationary;
 
     private float x_accel, y_accel, z_accel;
     public SensorManager sensorManager;
@@ -104,6 +110,16 @@ public class RecordFragment extends Fragment implements Serializable {
         record = view.findViewById(R.id.record);
         toggleButton = view.findViewById(R.id.toggleButton);
         listView = view.findViewById(R.id.timestamps);
+        label = view.findViewById(R.id.label);
+        walking = view.findViewById(R.id.walking);
+        stationary = view.findViewById(R.id.stationary);
+
+        label.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                labelString = walking.isChecked() ? "Walking" : "Stationary";
+            }
+        });
 
         timestampAdapter = new ArrayAdapter<String>(getContext(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, timestampStr);
@@ -175,7 +191,7 @@ public class RecordFragment extends Fragment implements Serializable {
             locationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    gpsEntry = location.getLatitude() + ","+location.getLongitude();
+                    gpsEntry = location.getLatitude() + ", "+location.getLongitude();
                 }
 
                 @Override
@@ -231,7 +247,7 @@ public class RecordFragment extends Fragment implements Serializable {
                     lastUpdate = actualTime;
                     gpsEntry = null == gpsEntry  ? "Nan, Nan":gpsEntry;
                     Entry = getTimestamp() + ", " + gpsEntry + ", " + event.values[0]+ ", "
-                            + event.values[1]+ ", "  + event.values[2] + "\n";
+                            + event.values[1]+ ", "  + event.values[2] + ", " + labelString +"\n";
                     Log.d(TAG, "Sensing Data");
 
                     addEntryToList(Entry);

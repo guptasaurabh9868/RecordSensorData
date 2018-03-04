@@ -89,13 +89,13 @@
                 android:layout_gravity="start"
                 android:layout_margin="13dp"
                 android:checked="false"
-                android:text="Male" />
+                android:text="@string/male" />
 
             <RadioButton
                 android:id="@+id/gen_female"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Female"
+                android:text="@string/female"
                 android:checked="false"
                 android:layout_gravity="end"
                 />
