@@ -57,6 +57,7 @@ public class RecordFragment extends Fragment implements Serializable {
     public static ArrayList<String> timestampStr = new ArrayList<String>();
     ListView listView;
     private String Entry = "";
+    public static String gpsEntry = " \n";
     public String file1, file2;
     public static int num1 = 0, num2 = 0;
     private static Boolean sensorListener_flag = false, gpslistener_flag = false;
@@ -118,7 +119,7 @@ public class RecordFragment extends Fragment implements Serializable {
 
                 if (isChecked && (MainActivity.accel_flag || MainActivity.gps_flag)) {
                     if (MainActivity.accel_flag) {
-                        file1 = "Accel" + num1++ + ".txt";
+                        file1 = "data" + num1++ + ".txt";
                         sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
                     }
                     if (MainActivity.gps_flag) {
@@ -143,38 +144,26 @@ public class RecordFragment extends Fragment implements Serializable {
         return view;
     }
 
-    /**
-     * Callback for the result from requesting permissions. This method
-     * is invoked for every call on {@link #requestPermissions(String[], int)}.
-     * <p>
-     * <strong>Note:</strong> It is possible that the permissions request interaction
-     * with the user is interrupted. In this case you will receive empty permissions
-     * and results arrays which should be treated as a cancellation.
-     * </p>
-     *
-     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
-     * @param permissions  The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *                     which is either {@link PackageManager#PERMISSION_GRANTED}
-     *                     or {@link PackageManager#PERMISSION_DENIED}. Never null.
-     * @see #requestPermissions(String[], int)
-     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
-            case  10 :
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        switch (requestCode) {
+            case 10:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationManager.requestLocationUpdates(LocationManager
                             .GPS_PROVIDER, 0, 0, locationListener);
-                locationManager.requestLocationUpdates(LocationManager.
-                        NETWORK_PROVIDER,0,0,locationListener);
+                    locationManager.requestLocationUpdates(LocationManager.
+                            NETWORK_PROVIDER, 0, 0, locationListener);
                 }
+                break;
+            case 20:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    saveFile(file1,Entry);
+                }
+                return;
+
         }
-        return;
-
     }
-
     public void GPSfunction() {
         if (!displayGpsStatus()) {
             alertbox("Gps Status!!", "Your GPS is: OFF");
@@ -183,10 +172,10 @@ public class RecordFragment extends Fragment implements Serializable {
             locationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    Entry = getTimestamp() + " long:"+location.getLongitude() + " lat :"+location.getLatitude();
+                    gpsEntry = "," + location.getLatitude() + ","+location.getLongitude() + "\n";
 
-                    addEntryToList(Entry);
-                    saveFile(file2,Entry);
+//                    addEntryToList(Entry);
+//                    saveFile(file2,Entry);
                 }
 
                 @Override
@@ -240,9 +229,9 @@ public class RecordFragment extends Fragment implements Serializable {
                 if (actualTime - lastUpdate > 6e8)
                 {
                     lastUpdate = actualTime;
-                    Entry = (getTimestamp() + " x: " + event.values[0] +
-                            " y: " + event.values[1] + " z: " + event.values[2]);
+                    Entry = getTimestamp() + ", " + event.values[0]+ ", " + event.values[1]+ ", "  + event.values[2];
                     Log.d(TAG, "Sensing Data");
+                    Entry += gpsEntry;
                     addEntryToList(Entry);
                     saveFile(file1,Entry);
                 }
@@ -317,7 +306,9 @@ public class RecordFragment extends Fragment implements Serializable {
     public void onResume() {
         super.onResume();
         Log.d(TAG,"OnResume State");
-
+        sensorManager.unregisterListener(sensorEventListener);
+        if(MainActivity.accel_flag)
+            sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         listView.setAdapter(timestampAdapter);
     }
 
@@ -357,7 +348,7 @@ public class RecordFragment extends Fragment implements Serializable {
     /****Getting the Timestamp***/
     public String getTimestamp() {
         String currentDateTime =java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-        String timestamp = new SimpleDateFormat("hh:mm:ss a").format(new Date(currentDateTime));
+        String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date(currentDateTime));
         return timestamp;
     }
 
