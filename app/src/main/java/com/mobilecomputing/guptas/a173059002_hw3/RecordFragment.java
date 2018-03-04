@@ -57,10 +57,11 @@ public class RecordFragment extends Fragment implements Serializable {
     public static ArrayList<String> timestampStr = new ArrayList<String>();
     ListView listView;
     private String Entry = "";
-    public static String gpsEntry = " \n";
+    public static String gpsEntry = null;
     public String file1, file2;
     public static int num1 = 0, num2 = 0;
     private static Boolean sensorListener_flag = false, gpslistener_flag = false;
+    private static String fields = "timestamp, lat, long, accelx, accely, accelz, label\n";
 
     private float x_accel, y_accel, z_accel;
     public SensorManager sensorManager;
@@ -97,7 +98,7 @@ public class RecordFragment extends Fragment implements Serializable {
     }
 
 
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_record, container, false);
         Log.d(TAG, "Oncreate : Strating");
         record = view.findViewById(R.id.record);
@@ -120,6 +121,8 @@ public class RecordFragment extends Fragment implements Serializable {
                 if (isChecked && (MainActivity.accel_flag || MainActivity.gps_flag)) {
                     if (MainActivity.accel_flag) {
                         file1 = "data" + num1++ + ".txt";
+                        saveFile(file1,MainActivity.Entry);
+                        saveFile(file1,fields);
                         sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
                     }
                     if (MainActivity.gps_flag) {
@@ -172,10 +175,7 @@ public class RecordFragment extends Fragment implements Serializable {
             locationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    gpsEntry = "," + location.getLatitude() + ","+location.getLongitude() + "\n";
-
-//                    addEntryToList(Entry);
-//                    saveFile(file2,Entry);
+                    gpsEntry = location.getLatitude() + ","+location.getLongitude();
                 }
 
                 @Override
@@ -229,9 +229,11 @@ public class RecordFragment extends Fragment implements Serializable {
                 if (actualTime - lastUpdate > 6e8)
                 {
                     lastUpdate = actualTime;
-                    Entry = getTimestamp() + ", " + event.values[0]+ ", " + event.values[1]+ ", "  + event.values[2];
+                    gpsEntry = null == gpsEntry  ? "Nan, Nan":gpsEntry;
+                    Entry = getTimestamp() + ", " + gpsEntry + ", " + event.values[0]+ ", "
+                            + event.values[1]+ ", "  + event.values[2] + "\n";
                     Log.d(TAG, "Sensing Data");
-                    Entry += gpsEntry;
+
                     addEntryToList(Entry);
                     saveFile(file1,Entry);
                 }
@@ -275,10 +277,6 @@ public class RecordFragment extends Fragment implements Serializable {
             Toast.makeText(getContext(), "SDCARD not Found!!!", Toast.LENGTH_SHORT).show();
         }
     }
-    public boolean fileExist(String fname){
-        File file = getContext().getFileStreamPath(fname);
-        return file.exists();
-    }
     private void fileWrite(String f_string, String entry) {
         File root = Environment.getExternalStorageDirectory();
         File dir = new File(root.getAbsolutePath() + "/mobileComputing");
@@ -289,7 +287,7 @@ public class RecordFragment extends Fragment implements Serializable {
         File file = new File(dir, f_string);
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file,true);
-            fileOutputStream.write(Entry.getBytes());
+            fileOutputStream.write(entry.getBytes());
             fileOutputStream.close();
             Toast.makeText(getContext(), "SAVED  to " + getContext().getFilesDir(), Toast.LENGTH_SHORT).show();
 

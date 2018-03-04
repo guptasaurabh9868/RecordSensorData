@@ -149,7 +149,7 @@ public class LoginFragment extends Fragment {
 
                 MainActivity.Entry = first_name.getText().toString() +","+ last_name.getText().toString() + "," + email.getText().toString()
                         + "," + mobile.getText().toString() + "," + age.getText().toString() + "," +
-                        (male.isChecked() ? male.getText().toString(): female.getText().toString());
+                        (male.isChecked() ? male.getText().toString(): female.getText().toString()) + "\n";
 
                 first_name.setText("");
                 last_name.setText("");
