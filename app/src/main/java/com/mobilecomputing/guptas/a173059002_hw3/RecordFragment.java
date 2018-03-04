@@ -59,6 +59,7 @@ public class RecordFragment extends Fragment implements Serializable {
     private String Entry = "";
     public String file1, file2;
     public static int num1 = 0, num2 = 0;
+    private static Boolean sensorListener_flag = false, gpslistener_flag = false;
 
     private float x_accel, y_accel, z_accel;
     public SensorManager sensorManager;
@@ -127,7 +128,10 @@ public class RecordFragment extends Fragment implements Serializable {
 
                     record.setText("Stop Recording");
                 } else if (!isChecked) {
-                    sensorManager.unregisterListener(sensorEventListener);
+                    if(sensorListener_flag)
+                        sensorManager.unregisterListener(sensorEventListener);
+                    if(gpslistener_flag)
+                        locationManager.removeUpdates(locationListener);
                     record.setText("Start Recording");
                 } else {
                     Toast.makeText(getContext(), "Please Select atleast one Sensor from Sensor Tab", Toast.LENGTH_SHORT).show();
@@ -175,6 +179,7 @@ public class RecordFragment extends Fragment implements Serializable {
         if (!displayGpsStatus()) {
             alertbox("Gps Status!!", "Your GPS is: OFF");
         } else {
+            gpslistener_flag = true;
             locationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
@@ -222,9 +227,12 @@ public class RecordFragment extends Fragment implements Serializable {
     }
 
     final SensorEventListener sensorEventListener = new SensorEventListener() {
+
+
         @Override
         public void onSensorChanged(SensorEvent event) {
 
+            sensorListener_flag = true;
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
                 long actualTime = event.timestamp; //get the event's timestamp
