@@ -61,22 +61,7 @@ public class LoginFragment extends Fragment {
 
     MainActivity.sharedPrefs = getContext().getSharedPreferences("pref.dat", Context.MODE_PRIVATE);
 
-    if(MainActivity.sharedPrefs != null)
-    {
-        Log.d(TAG,"SharedPreference Worked!!!");
-        String s = MainActivity.sharedPrefs.getString("Person","");
-        ArrayList<String> PersonDetails = (ArrayList<String>) Arrays.asList(s.split(","));
-        first_name.setText(PersonDetails.get(0));
-        last_name.setText(PersonDetails.get(1));
-        email.setText(PersonDetails.get(2));
-        mobile.setText(PersonDetails.get(3));
-        age.setText(PersonDetails.get(4));
-        if(PersonDetails.get(5).equalsIgnoreCase(male.getText().toString()))
-            male.setChecked(true);
-        else
-            female.setChecked(true);
-    }
-        mobile.addTextChangedListener(new TextWatcher() {
+       mobile.addTextChangedListener(new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -200,6 +185,23 @@ public class LoginFragment extends Fragment {
         errorage.setVisibility(View.GONE);
         erroremail.setVisibility(View.GONE);
         errormobile.setVisibility(View.GONE);
+        if(MainActivity.sharedPrefs != null)
+        {
+            Log.d(TAG,"SharedPreference Worked!!!");
+            String s = MainActivity.sharedPrefs.getString("Person","");
+            MainActivity.Entry = s;
+            ArrayList<String> PersonDetails = new ArrayList<>(Arrays.asList(s.split(",")));
+            first_name.setText(PersonDetails.get(0));
+            last_name.setText(PersonDetails.get(1));
+            email.setText(PersonDetails.get(2));
+            mobile.setText(PersonDetails.get(3));
+            age.setText(PersonDetails.get(4));
+            if(PersonDetails.get(5).equalsIgnoreCase(male.getText().toString()))
+                male.setChecked(true);
+            else
+                female.setChecked(true);
+        }
+
     }
 
 

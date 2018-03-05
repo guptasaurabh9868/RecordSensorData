@@ -67,6 +67,22 @@ public class SensorFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Log.d(TAG,"OnResume State");
+        if(MainActivity.sharedPrefs != null)
+        {
+            Log.d(TAG,"SharedPreference Worked!!!");
+            String accel_flag = MainActivity.sharedPrefs.getString("Accel_flag","");
+            String gps_flag = MainActivity.sharedPrefs.getString("GPS_flag","");
+            if("true".equalsIgnoreCase(accel_flag))
+            {
+                accel.setChecked(true);
+                MainActivity.accel_flag = true;
+            }
+            if("true".equalsIgnoreCase(gps_flag))
+            {
+                gps.setChecked(true);
+                MainActivity.gps_flag = true;
+            }
+        }
     }
 
     @Override

@@ -135,19 +135,25 @@ public class RecordFragment extends Fragment implements Serializable {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
                 if (isChecked && (MainActivity.accel_flag || MainActivity.gps_flag)) {
+                    MainActivity.record_toggle = true;
+                    file1 = "data" + num1++ + ".txt";
                     if (MainActivity.accel_flag) {
-                        file1 = "data" + num1++ + ".txt";
                         saveFile(file1,MainActivity.Entry);
                         saveFile(file1,fields);
                         sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
                     }
                     if (MainActivity.gps_flag) {
-                        file2 = "GPS" + num2++ + ".txt";
+                        if(!MainActivity.accel_flag)
+                        {
+                            saveFile(file1,MainActivity.Entry);
+                            saveFile(file1,fields);
+                        }
                         GPSfunction();
                     }
 
                     record.setText("Stop Recording");
                 } else if (!isChecked) {
+                    MainActivity.record_toggle = false;
                     if(sensorListener_flag)
                         sensorManager.unregisterListener(sensorEventListener);
                     if(gpslistener_flag)
@@ -160,7 +166,7 @@ public class RecordFragment extends Fragment implements Serializable {
         });
 
         MainActivity.editor.putString("label",labelString);
-        MainActivity.editor.putString("recordString",record.getText().toString());
+        MainActivity.editor.putString("record_toggle",MainActivity.record_toggle.toString());
         MainActivity.editor.apply();
         return view;
     }
@@ -194,6 +200,16 @@ public class RecordFragment extends Fragment implements Serializable {
                 @Override
                 public void onLocationChanged(Location location) {
                     gpsEntry = location.getLatitude() + ", "+location.getLongitude();
+                    if (!MainActivity.accel_flag)
+                    {
+                        gpsEntry = null == gpsEntry  ? "Nan, Nan":gpsEntry;
+                        Entry = getTimestamp() + ", " + gpsEntry + ", "
+                                + "Nan" + ", " + "Nan" + ", " + "Nan" + ", " + labelString +"\n";
+
+                        addEntryToList(Entry);
+                        saveFile(file1,Entry);
+                    }
+
                 }
 
                 @Override
@@ -322,8 +338,43 @@ public class RecordFragment extends Fragment implements Serializable {
     public void onResume() {
         super.onResume();
         Log.d(TAG,"OnResume State");
+        if (MainActivity.sharedPrefs != null)
+        {
+            Log.d(TAG,"SharedPreference Worked!!!");
+
+            String label = MainActivity.sharedPrefs.getString("label","");
+            String record_toggle = MainActivity.sharedPrefs.getString("record_toggle","");
+            String accel_flag = MainActivity.sharedPrefs.getString("Accel_flag","");
+            String gps_flag = MainActivity.sharedPrefs.getString("GPS_flag","");
+            if("Stationary".equalsIgnoreCase(label))
+            {
+                stationary.setChecked(true);
+            }else if("walking".equalsIgnoreCase(label))
+            {
+                walking.setChecked(true);
+            }
+            if("true".equalsIgnoreCase(record_toggle))
+            {
+                toggleButton.setChecked(true);
+                MainActivity.record_toggle = true;
+                record.setText("Stop Recording");
+            }else{
+                toggleButton.setChecked(false);
+                MainActivity.record_toggle = false;
+                record.setText("Start Recording");
+            }
+            if("true".equalsIgnoreCase(accel_flag))
+            {
+                MainActivity.accel_flag = true;
+            }
+            if("true".equalsIgnoreCase(gps_flag))
+            {
+                MainActivity.gps_flag = true;
+            }
+        }
+
         sensorManager.unregisterListener(sensorEventListener);
-        if(MainActivity.accel_flag)
+        if(MainActivity.record_toggle && MainActivity.accel_flag)
             sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         listView.setAdapter(timestampAdapter);
     }

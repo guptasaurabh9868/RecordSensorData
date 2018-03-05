@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     public static Boolean accel_flag = false;
     public static Boolean gps_flag = false;
     public static String Entry;
+    public static Boolean record_toggle = false;
 
     private ViewPager viewPager;
     public ArrayList<Fragment> tabFragmentsList;
