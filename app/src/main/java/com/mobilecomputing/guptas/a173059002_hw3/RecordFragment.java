@@ -21,7 +21,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import static android.content.Context.MODE_APPEND;
 import static android.content.Context.SENSOR_SERVICE;
 
 /**
@@ -106,13 +104,53 @@ public class RecordFragment extends Fragment implements Serializable {
 
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_record, container, false);
-        Log.d(TAG, "Oncreate : Strating");
+        Log.d(TAG, "Oncreate : Starting");
         record = view.findViewById(R.id.record);
         toggleButton = view.findViewById(R.id.toggleButton);
         listView = view.findViewById(R.id.timestamps);
         label = view.findViewById(R.id.label);
         walking = view.findViewById(R.id.walking);
         stationary = view.findViewById(R.id.stationary);
+
+
+        if (MainActivity.sharedPrefs != null)
+        {
+            Log.d(TAG,"SharedPreference Worked!!!");
+
+            String label = MainActivity.sharedPrefs.getString("label","");
+            String record_toggle = MainActivity.sharedPrefs.getString("record_toggle","");
+            String accel_flag = MainActivity.sharedPrefs.getString("Accel_flag","");
+            String gps_flag = MainActivity.sharedPrefs.getString("GPS_flag","");
+            if("Stationary".equalsIgnoreCase(label))
+            {
+                stationary.setChecked(true);
+            }else if("walking".equalsIgnoreCase(label))
+            {
+                walking.setChecked(true);
+            }
+            if("true".equalsIgnoreCase(record_toggle))
+            {
+                toggleButton.setChecked(true);
+                MainActivity.record_toggle = true;
+                record.setText("Stop Recording");
+            }else{
+                toggleButton.setChecked(false);
+                MainActivity.record_toggle = false;
+                record.setText("Start Recording");
+            }
+            if("true".equalsIgnoreCase(accel_flag))
+            {
+                MainActivity.accel_flag = true;
+            }
+            if("true".equalsIgnoreCase(gps_flag))
+            {
+                MainActivity.gps_flag = true;
+            }
+        }
+
+
+
+
 
         label.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -135,8 +173,9 @@ public class RecordFragment extends Fragment implements Serializable {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
                 if (isChecked && (MainActivity.accel_flag || MainActivity.gps_flag)) {
+
                     MainActivity.record_toggle = true;
-                    file1 = "data" + num1++ + ".txt";
+                    file1 = "data" + "_" + getTimestamp() + ".csv";
                     if (MainActivity.accel_flag) {
                         saveFile(file1,MainActivity.Entry);
                         saveFile(file1,fields);
@@ -152,13 +191,17 @@ public class RecordFragment extends Fragment implements Serializable {
                     }
 
                     record.setText("Stop Recording");
+
                 } else if (!isChecked) {
+                    addEntryToList(getTimestamp());
                     MainActivity.record_toggle = false;
                     if(sensorListener_flag)
                         sensorManager.unregisterListener(sensorEventListener);
                     if(gpslistener_flag)
                         locationManager.removeUpdates(locationListener);
+
                     record.setText("Start Recording");
+
                 } else {
                     Toast.makeText(getContext(), "Please Select atleast one Sensor from Sensor Tab", Toast.LENGTH_SHORT).show();
                 }
@@ -205,8 +248,6 @@ public class RecordFragment extends Fragment implements Serializable {
                         gpsEntry = null == gpsEntry  ? "Nan, Nan":gpsEntry;
                         Entry = getTimestamp() + ", " + gpsEntry + ", "
                                 + "Nan" + ", " + "Nan" + ", " + "Nan" + ", " + labelString +"\n";
-
-                        addEntryToList(Entry);
                         saveFile(file1,Entry);
                     }
 
@@ -258,20 +299,12 @@ public class RecordFragment extends Fragment implements Serializable {
             sensorListener_flag = true;
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
-                long actualTime = event.timestamp; //get the event's timestamp
-                int value = (int) event.values[0];
-                if (actualTime - lastUpdate > 6e8)
-                {
-                    lastUpdate = actualTime;
-                    gpsEntry = null == gpsEntry  ? "Nan, Nan":gpsEntry;
-                    Entry = getTimestamp() + ", " + gpsEntry + ", " + event.values[0]+ ", "
-                            + event.values[1]+ ", "  + event.values[2] + ", " + labelString +"\n";
-                    Log.d(TAG, "Sensing Data");
+                gpsEntry = null == gpsEntry  ? "Nan, Nan":gpsEntry;
+                Entry = getTimestamp() + ", " + gpsEntry + ", " + event.values[0]+ ", "
+                        + event.values[1]+ ", "  + event.values[2] + ", " + labelString +"\n";
+                Log.d(TAG, "Sensing Data");
 
-                    addEntryToList(Entry);
-                    saveFile(file1,Entry);
-                }
-
+                saveFile(file1,Entry);
             }
         }
 
