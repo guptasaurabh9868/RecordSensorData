@@ -58,6 +58,9 @@ public class SensorFragment extends Fragment {
                 }
             }
         });
+        MainActivity.editor.putString("Accel_flag",MainActivity.accel_flag.toString());
+        MainActivity.editor.putString("GPS_flag",MainActivity.gps_flag.toString());
+        MainActivity.editor.apply();
         return view;
     }
     @Override

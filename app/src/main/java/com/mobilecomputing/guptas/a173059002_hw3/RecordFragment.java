@@ -159,7 +159,9 @@ public class RecordFragment extends Fragment implements Serializable {
             }
         });
 
-
+        MainActivity.editor.putString("label",labelString);
+        MainActivity.editor.putString("recordString",record.getText().toString());
+        MainActivity.editor.apply();
         return view;
     }
 

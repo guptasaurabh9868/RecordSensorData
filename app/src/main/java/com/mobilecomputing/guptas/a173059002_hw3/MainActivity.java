@@ -1,5 +1,7 @@
 package com.mobilecomputing.guptas.a173059002_hw3;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -26,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
     public SensorManager sensorManager;
     public Sensor sensor;
+    public static SharedPreferences sharedPrefs;
+    public static SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,19 +42,15 @@ public class MainActivity extends AppCompatActivity {
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         setupViewPager(viewPager);
-//        tabFragmentsList =
-        //Give the Tablayout the viewPager
 
+
+        //Give the Tablayout the viewPager
         TabLayout tabLayout = (TabLayout) findViewById(id.sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+        SharedPreferences sharedPrefs = getSharedPreferences("pref.dat", Context.MODE_PRIVATE);
+        editor = sharedPrefs.edit();
 
-//        //Iterate over all the tabs
-//        for(int i = 0;i < tabLayout.getTabCount();i++)
-//        {
-//            TabLayout.Tab tab = tabLayout.getTabAt(i);
-//            tab.setCustomView(pagerAdapter.getTabView(i));
-//        }
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -79,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"Onstop Activity");
 
     }
-
-
 
     @Override
     public void onDestroy() {
